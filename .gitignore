@@ -1,0 +1,9 @@
+env/
+__pycache__/
+.vscode/
+# too large to keep data in repo
+data/
+
+.env
+.DS_Store
+*.pyc
