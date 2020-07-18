@@ -92,6 +92,11 @@ def main():
 
     with driver as d:
         process_season('22013.csv', d)
+        process_season('22014.csv', d)
+        process_season('22015.csv', d)
+        process_season('22016.csv', d)
+        process_season('22017.csv', d)
+        process_season('22018.csv', d)
 
 
 if __name__ == "__main__":
