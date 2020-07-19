@@ -69,7 +69,7 @@ def process_season(season, driver):
     Set up season csv file and process each game.
     """
     src_path = os.path.join(PROC_DATA, 'season', season + '.csv')
-    log_path = os.path.join(LOG_DIR, 'selenium-{}.log'.format(season))
+    log_path = os.path.join(LOG_DIR, '{}-selenium-error.log'.format(season))
     season_dir = os.path.join(RAW_DATA, 'games', season)
     if not os.path.exists(season_dir):
         os.mkdir(season_dir)
