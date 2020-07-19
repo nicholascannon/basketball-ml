@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-"""get_raw_game_data.py
-
-Scrape stats.nba.com and build data set of advanced statistics.
-"""
 import os
 import pathlib
 import csv
@@ -20,15 +16,16 @@ load_dotenv()
 
 CHROME_DRIVER = os.environ['CHROME_DRIVER']
 DATA_DIR = os.path.join(pathlib.Path().absolute(), 'data')
+LOG_DIR = os.path.join(pathlib.Path().absolute(), 'logs')
 RAW_DATA = os.path.join(DATA_DIR, 'raw')
 PROC_DATA = os.path.join(DATA_DIR, 'processed')
 BOX_SCORE_URLS = [
-    ('https://stats.nba.com/game/{}/', 'traditional'),
-    ('https://stats.nba.com/game/{}/advanced/', 'advanced'),
-    ('https://stats.nba.com/game/{}/misc/', 'misc'),
-    ('https://stats.nba.com/game/{}/scoring/', 'scoring'),
-    ('https://stats.nba.com/game/{}/four-factors/', 'four-factors'),
-    ('https://stats.nba.com/game/{}/tracking/', 'player-tracking'),
+    ('https://stats.nba.com/game/{}/', 'traditional.html'),
+    ('https://stats.nba.com/game/{}/advanced/', 'advanced.html'),
+    ('https://stats.nba.com/game/{}/misc/', 'misc.html'),
+    ('https://stats.nba.com/game/{}/scoring/', 'scoring.html'),
+    ('https://stats.nba.com/game/{}/four-factors/', 'four-factors.html'),
+    ('https://stats.nba.com/game/{}/tracking/', 'player-tracking.html'),
 ]
 
 TABLE1_XPATH = '/html/body/main/div[2]/div/div/div[4]/div/div[2]/div/nba-stat-table[1]/div[2]/div[1]/table'
@@ -42,6 +39,14 @@ def process_game(game_id, season_dir, driver):
     game_dir = os.path.join(season_dir, game_id)
     if not os.path.exists(game_dir):
         os.mkdir(game_dir)
+    else:
+        # game dir exists, check if it can be skipped
+        game_files = os.listdir(game_dir)
+        for _, page in BOX_SCORE_URLS:
+            if page not in game_files:
+                break
+        else:
+            return  # can skip this game!!
 
     for url, page in BOX_SCORE_URLS:
         url = url.format(game_id)
@@ -55,7 +60,7 @@ def process_game(game_id, season_dir, driver):
         boxscore = driver.execute_script(
             "return document.getElementsByClassName('stats-boxscore-page')[0].innerHTML")
 
-        with open(os.path.join(game_dir, page + '.html'), 'w') as f:
+        with open(os.path.join(game_dir, page), 'w') as f:
             f.write(boxscore)
 
 
@@ -63,12 +68,13 @@ def process_season(season, driver):
     """
     Set up season csv file and process each game.
     """
-    src_path = os.path.join(PROC_DATA, 'season', season)
-    season_dir = os.path.join(RAW_DATA, 'games', season[:-4])
+    src_path = os.path.join(PROC_DATA, 'season', season + '.csv')
+    log_path = os.path.join(LOG_DIR, 'selenium-{}.log'.format(season))
+    season_dir = os.path.join(RAW_DATA, 'games', season)
     if not os.path.exists(season_dir):
         os.mkdir(season_dir)
 
-    with open(src_path, 'r') as src, open('{}-errors.txt'.format(season), 'w') as err:
+    with open(src_path, 'r') as src, open(log_path, 'w') as err:
         games = csv.reader(src)
         next(games)  # skip headers
 

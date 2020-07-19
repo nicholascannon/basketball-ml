@@ -9,6 +9,7 @@ import pathlib
 from tqdm import tqdm
 import ijson
 import csv
+import pandas as pd
 
 DATA_DIR = os.path.join(pathlib.Path().absolute(), 'data')
 RAW_DATA = os.path.join(DATA_DIR, 'raw', 'season')
@@ -27,6 +28,7 @@ def process_season(season_file):
         src.seek(0)
         dest_path = os.path.join(PROC_DATA, season_id + '.csv')
 
+        # write raw data to csv files
         with open(dest_path, 'w') as dest:
             games = ijson.items(src, 'resultSets.item.rowSet.item')
             writer = csv.writer(dest)
@@ -36,6 +38,11 @@ def process_season(season_file):
             # stream game data from json file
             for game in games:
                 writer.writerow([game[0], game[4]])
+
+        # deduplicate data with pandas
+        df = pd.read_csv(dest_path, dtype={'game_id': str})
+        df.drop_duplicates(['game_id'], inplace=True)
+        df.to_csv(dest_path, index=False)
 
 
 if __name__ == "__main__":
