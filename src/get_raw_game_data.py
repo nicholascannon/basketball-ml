@@ -6,11 +6,9 @@ Scrape stats.nba.com and build data set of advanced statistics.
 import os
 import pathlib
 import csv
-import time
 from dotenv import load_dotenv
 from tqdm import tqdm
-import bs4
-import logging
+import sys
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -82,6 +80,9 @@ def process_season(season, driver):
 
 
 def main():
+    if len(sys.argv) < 1:
+        raise Error('Invalid args')
+
     options = Options()
     options.add_argument('--headless')
     options.add_argument('disable-blink-features=AutomationControlled')
@@ -91,12 +92,7 @@ def main():
         executable_path=CHROME_DRIVER, options=options)
 
     with driver as d:
-        process_season('22013.csv', d)
-        process_season('22014.csv', d)
-        process_season('22015.csv', d)
-        process_season('22016.csv', d)
-        process_season('22017.csv', d)
-        process_season('22018.csv', d)
+        process_season(sys.argv[1], d)
 
 
 if __name__ == "__main__":
