@@ -96,7 +96,7 @@ def process_game(game_id, season_dir, season_id):
 def process_season(season):
     log_path = os.path.join(LOG_DIR, season + '.error')
     src_path = os.path.join(PROC_DATA, 'season', season + '.csv')
-    season_dir = os.path.join(RAW_DATA, 'games-fetch', season)
+    season_dir = os.path.join(RAW_DATA, 'games', season)
 
     if not os.path.exists(season_dir):
         os.mkdir(season_dir)
