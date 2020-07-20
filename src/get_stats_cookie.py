@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 from dotenv import load_dotenv
+import pickle
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -23,5 +24,11 @@ if __name__ == "__main__":
     with driver as d:
         driver.get('https://stats.nba.com/game/0021900969/')
 
-        cookies = driver.execute_script("return document.cookie")
-        print(cookies)
+        # cookies = driver.execute_script("return document.cookie")
+
+        driver_cookies = driver.get_cookies()
+        cookies = {}
+        for cookie in driver_cookies:
+            cookies[cookie['name']] = cookie['value']
+
+        pickle.dump(cookies, open('cookies.pickle', 'wb'))

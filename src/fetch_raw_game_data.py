@@ -7,6 +7,7 @@ import csv
 from tqdm import tqdm
 from dotenv import load_dotenv
 from http.cookies import SimpleCookie
+import pickle
 
 load_dotenv()
 
@@ -14,6 +15,7 @@ DATA_DIR = os.path.join(pathlib.Path().absolute(), 'data')
 LOG_DIR = os.path.join(pathlib.Path().absolute(), 'logs')
 RAW_DATA = os.path.join(DATA_DIR, 'raw')
 PROC_DATA = os.path.join(DATA_DIR, 'processed')
+PICKLE_PATH = os.path.join(pathlib.Path().absolute(), 'cookies.pickle')
 GAME_TOTAL = 1230
 REQUESTS = [
     ('/boxscoreadvancedv2', 'advanced.json'),
@@ -33,12 +35,16 @@ SEASON_MAP = {
     '22018': '2018-19',
 }
 
-# setup cookie
-cookie = SimpleCookie()
-cookie.load(os.environ.get('STATS_COOKIE'))
-STATS_COOKIE = {}
-for key, morsel in cookie.items():
-    STATS_COOKIE[key] = morsel.value
+if os.path.exists(PICKLE_PATH):
+    STATS_COOKIE = pickle.load(open(PICKLE_PATH, 'rb'))
+else:
+    # setup cookie
+    cookie = SimpleCookie()
+    cookie.load(os.environ.get('STATS_COOKIE'))
+    print(cookie.items())
+    STATS_COOKIE = {}
+    for key, morsel in cookie.items():
+        STATS_COOKIE[key] = morsel.value
 
 
 def process_game(game_id, season_dir, season_id):
