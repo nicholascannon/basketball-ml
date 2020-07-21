@@ -14,6 +14,7 @@ import pandas as pd
 DATA_DIR = os.path.join(pathlib.Path().absolute(), 'data')
 RAW_DATA = os.path.join(DATA_DIR, 'raw', 'season')
 PROC_DATA = os.path.join(DATA_DIR, 'processed', 'season')
+N_GAMES = 1230
 
 
 def process_season(season_file):

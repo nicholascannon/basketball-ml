@@ -6,16 +6,14 @@ import requests
 import csv
 from tqdm import tqdm
 from dotenv import load_dotenv
-from http.cookies import SimpleCookie
-import pickle
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 load_dotenv()
 
 DATA_DIR = os.path.join(pathlib.Path().absolute(), 'data')
-LOG_DIR = os.path.join(pathlib.Path().absolute(), 'logs')
 RAW_DATA = os.path.join(DATA_DIR, 'raw')
 PROC_DATA = os.path.join(DATA_DIR, 'processed')
-PICKLE_PATH = os.path.join(pathlib.Path().absolute(), 'cookies.pickle')
 GAME_TOTAL = 1230
 REQUESTS = [
     ('/boxscoreadvancedv2', 'advanced.json'),
@@ -35,19 +33,31 @@ SEASON_MAP = {
     '22018': '2018-19',
 }
 
-if os.path.exists(PICKLE_PATH):
-    STATS_COOKIE = pickle.load(open(PICKLE_PATH, 'rb'))
-else:
-    # setup cookie
-    cookie = SimpleCookie()
-    cookie.load(os.environ.get('STATS_COOKIE'))
-    print(cookie.items())
-    STATS_COOKIE = {}
-    for key, morsel in cookie.items():
-        STATS_COOKIE[key] = morsel.value
+
+def get_stats_cookie(exe_path):
+    """
+    Opens a headless chrome browser and fetches cookies from stats.nba.com for
+    use with requests.
+    """
+    cookies = {}
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('disable-blink-features=AutomationControlled')
+    options.add_argument(
+        'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36')
+    driver = webdriver.Chrome(executable_path=exe_path, options=options)
+
+    with driver as d:
+        driver.get('https://stats.nba.com/game/0021900969/')
+
+        driver_cookies = driver.get_cookies()
+        for cookie in driver_cookies:
+            cookies[cookie['name']] = cookie['value']
+
+    return cookies
 
 
-def process_game(game_id, season_dir, season_id):
+def process_game(game_id, season_dir, season_id, cookies):
     game_dir = os.path.join(season_dir, game_id)
     if not os.path.exists(game_dir):
         os.mkdir(game_dir)
@@ -89,7 +99,7 @@ def process_game(game_id, season_dir, season_id):
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'
             },
             params=params,
-            cookies=STATS_COOKIE,
+            cookies=cookies,
             timeout=10
         )
         r.raise_for_status()
@@ -99,10 +109,9 @@ def process_game(game_id, season_dir, season_id):
             f.write(r.text)
 
 
-def process_season(season):
-    log_path = os.path.join(LOG_DIR, season + '.error')
-    src_path = os.path.join(PROC_DATA, 'season', season + '.csv')
-    season_dir = os.path.join(RAW_DATA, 'games', season)
+def process_season(season_id, cookies):
+    src_path = os.path.join(PROC_DATA, 'season', season_id + '.csv')
+    season_dir = os.path.join(RAW_DATA, 'games', season_id)
 
     if not os.path.exists(season_dir):
         os.mkdir(season_dir)
@@ -111,18 +120,17 @@ def process_season(season):
         games = csv.reader(src)
         next(games)  # skip headers
 
-        for season_id, game_id in tqdm(games, total=GAME_TOTAL):
+        for _, game_id in tqdm(games, total=GAME_TOTAL):
             try:
-                process_game(game_id, season_dir, season)
+                process_game(game_id, season_dir, season_id, cookies)
             except Exception as e:
-                with open(log_path, 'w') as err:
-                    err.write(game_id + '\n')
-
-                break  # will have to break to reset stats cookie
+                print('Error at game_id {}: {}'.format(game_id, e))
+                return
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         raise Exception('Must supply season code (22013 etc)')
 
+    cookies = get_stats_cookie(os.environ['CHROME_DRIVER'])
     process_season(sys.argv[1])
