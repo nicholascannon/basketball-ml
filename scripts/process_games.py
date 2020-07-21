@@ -15,9 +15,11 @@ HEADERS = [
     'GAME_ID',
 
     'A_FGM', 'A_FGA', 'A_FG_PCT', 'A_FG3M', 'A_FG3A', 'A_FG3_PCT', 'A_FTM',
-    'A_FTA', 'A_FT_PCT', 'A_OREB', 'A_DREB', 'A_REB', 'A_AST', 'A_STL',           'A_BLK', 'A_TO', 'A_PF', 'A_PTS', 'A_PLUS_MIN',
+    'A_FTA', 'A_FT_PCT', 'A_OREB', 'A_DREB', 'A_REB', 'A_AST', 'A_STL',
+    'A_BLK', 'A_TO', 'A_PF', 'A_PTS', 'A_PLUS_MIN',
     'H_FGM', 'H_FGA', 'H_FG_PCT', 'H_FG3M', 'H_FG3A', 'H_FG3_PCT', 'H_FTM',
-    'H_FTA', 'H_FT_PCT', 'H_OREB', 'H_DREB', 'H_REB', 'H_AST', 'H_STL',           'H_BLK', 'H_TO', 'H_PF', 'H_PTS', 'H_PLUS_MIN',
+    'H_FTA', 'H_FT_PCT', 'H_OREB', 'H_DREB', 'H_REB', 'H_AST', 'H_STL',
+    'H_BLK', 'H_TO', 'H_PF', 'H_PTS', 'H_PLUS_MIN',
 
     'A_FTA_RATE', 'A_TM_TOV_PCT',
     'H_FTA_RATE', 'H_TM_TOV_PCT',
@@ -96,11 +98,9 @@ def process_season(season_id):
                 game_id,
                 *process_game(os.path.join(src, game_id))
             ])
-            break
 
     df = pd.read_csv(dest)
     print(df.info())
-    print(df.head())
 
 
 if __name__ == "__main__":
