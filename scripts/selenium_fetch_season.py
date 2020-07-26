@@ -16,7 +16,6 @@ load_dotenv()
 
 CHROME_DRIVER = os.environ['CHROME_DRIVER']
 DATA_DIR = os.path.join(pathlib.Path().absolute(), 'data')
-LOG_DIR = os.path.join(pathlib.Path().absolute(), 'logs')
 RAW_DATA = os.path.join(DATA_DIR, 'raw')
 PROC_DATA = os.path.join(DATA_DIR, 'processed')
 BOX_SCORE_URLS = [
@@ -69,12 +68,11 @@ def process_season(season, driver):
     Set up season csv file and process each game.
     """
     src_path = os.path.join(PROC_DATA, 'season', season + '.csv')
-    log_path = os.path.join(LOG_DIR, '{}-selenium-error.log'.format(season))
     season_dir = os.path.join(RAW_DATA, 'games', season)
     if not os.path.exists(season_dir):
         os.mkdir(season_dir)
 
-    with open(src_path, 'r') as src, open(log_path, 'w') as err:
+    with open(src_path, 'r') as src:
         games = csv.reader(src)
         next(games)  # skip headers
 
@@ -82,7 +80,7 @@ def process_season(season, driver):
             try:
                 process_game(game_id, season_dir, driver)
             except Exception:
-                err.write(game_id + '\n')
+                print('Errored at game {}'.format(game_id))
 
 
 def main():

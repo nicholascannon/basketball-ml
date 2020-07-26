@@ -127,9 +127,6 @@ def process_season(season_id):
                 *process_game(os.path.join(src, game_id))
             ])
 
-    # df = pd.read_csv(dest, dtype={'GAME_ID': str})
-    # print(df.head())
-
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
