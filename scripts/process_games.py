@@ -13,6 +13,9 @@ PROC_DATA = os.path.join(DATA_DIR, 'processed')
 
 HEADERS = [
     'GAME_ID',
+    'DATE',
+    'SEASON',
+
     'A_ID',
     'H_ID',
 
@@ -29,8 +32,8 @@ HEADERS = [
     'A_OFF_RATING', 'A_DEF_RATING', 'A_AST_TOV', 'A_EFG_PCT', 'A_TS_PCT', 'A_PACE', 'A_PIE',
     'H_OFF_RATING', 'H_DEF_RATING', 'H_AST_TOV', 'H_EFG_PCT', 'H_TS_PCT', 'H_PACE', 'H_PIE',
 
-    'A_PTS_OFF_TO', 'A_PTS_2ND_CHANCE', 'A_PTS_FB', 'A_PTS_PAINT', 'A_BLK',
-    'H_PTS_OFF_TO', 'H_PTS_2ND_CHANCE', 'H_PTS_FB', 'H_PTS_PAINT', 'H_BLK',
+    'A_PTS_OFF_TO', 'A_PTS_2ND_CHANCE', 'A_PTS_FB', 'A_PTS_PAINT',
+    'H_PTS_OFF_TO', 'H_PTS_2ND_CHANCE', 'H_PTS_FB', 'H_PTS_PAINT',
 
     'A_DIST', 'A_ORBC', 'A_DRBC', 'A_RBC', 'A_TCHS', 'A_SAST', 'A_PASS', 'A_CFGM', 'A_CFGA',
     'A_UFGM', 'A_UFGA',
@@ -51,6 +54,9 @@ def process_game(game_path):
 
     with open(os.path.join(game_path, 'boxscore-summary.json')) as f:
         summary = json.load(f)
+
+        data.append(summary['resultSets'][0]['rowSet'][0][0])  # date
+        data.append(summary['resultSets'][0]['rowSet'][0][8])  # season
 
         away_id = summary['resultSets'][0]['rowSet'][0][7]
         data.append(away_id)
@@ -77,11 +83,25 @@ def process_game(game_path):
 
     with open(os.path.join(game_path, 'four-factors.json')) as f:
         factors = json.load(f)
+
+        # figure out home / away indexes
+        if factors['resultSets'][1]['rowSet'][0][1] == away_id:
+            team_idx = [0, 1]
+        else:
+            team_idx = [1, 0]
+
         for team in team_idx:
             data += factors['resultSets'][1]['rowSet'][team][7:9]
 
     with open(os.path.join(game_path, 'advanced.json')) as f:
         adv = json.load(f)
+
+        # figure out home / away indexes
+        if adv['resultSets'][1]['rowSet'][0][1] == away_id:
+            team_idx = [0, 1]
+        else:
+            team_idx = [1, 0]
+
         for team in team_idx:
             data += [
                 adv['resultSets'][1]['rowSet'][team][7],
@@ -95,12 +115,25 @@ def process_game(game_path):
 
     with open(os.path.join(game_path, 'misc.json')) as f:
         misc = json.load(f)
+
+        # figure out home / away indexes
+        if misc['resultSets'][1]['rowSet'][0][1] == away_id:
+            team_idx = [0, 1]
+        else:
+            team_idx = [1, 0]
+
         for team in team_idx:
             data += misc['resultSets'][1]['rowSet'][team][6:10]
-            data.append(misc['resultSets'][1]['rowSet'][team][14])
 
     with open(os.path.join(game_path, 'tracking.json')) as f:
         tracking = json.load(f)
+
+        # figure out home / away indexes
+        if tracking['resultSets'][1]['rowSet'][0][1] == away_id:
+            team_idx = [0, 1]
+        else:
+            team_idx = [1, 0]
+
         for team in team_idx:
             data += tracking['resultSets'][1]['rowSet'][team][6:10]
             data += tracking['resultSets'][1]['rowSet'][team][10:12]

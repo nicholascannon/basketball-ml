@@ -133,4 +133,4 @@ if __name__ == "__main__":
         raise Exception('Must supply season code (22013 etc)')
 
     cookies = get_stats_cookie(os.environ['CHROME_DRIVER'])
-    process_season(sys.argv[1])
+    process_season(sys.argv[1], cookies)
