@@ -27,6 +27,7 @@ def process_teams():
     # prep stuff
     home_cols = [col for col in seasons.columns if col[:2] == 'H_']
     away_cols = [col for col in seasons.columns if col[:2] == 'A_']
+    non_feature_cols = ['GAME_ID', 'DATE', 'SEASON', 'TEAM', 'OPPONENT', 'WON']
 
     # df rename maps
     away_rename = {hdr: hdr[2:] for hdr in away_cols}
@@ -35,9 +36,6 @@ def process_teams():
     for team_id in tqdm(seasons['A_ID'].unique()):
         # process away games
         away_games = seasons[seasons['A_ID'] == team_id].copy()
-        away_games['TEAM'] = away_games['A_ID']
-        away_games['OPPONENT'] = away_games['H_ID']
-        away_games['WON'] = ~away_games['HOME_WIN']  # negate!!
         away_games['HOME'] = 0
 
         # basic stats against this team
@@ -47,15 +45,16 @@ def process_teams():
         away_games['STL_A'] = away_games['H_STL']
         away_games['BLK_A'] = away_games['H_BLK']
 
+        away_games['WON'] = 1 - away_games['HOME_WIN']  # flip the label!
+        away_games['TEAM'] = away_games['A_ID']
+        away_games['OPPONENT'] = away_games['H_ID']
+
         # rename and remove
         away_games.rename(columns=away_rename, inplace=True)
         away_games.drop(columns=['HOME_WIN', 'ID', *home_cols], inplace=True)
 
         # process home games
         home_games = seasons[seasons['H_ID'] == team_id].copy()
-        home_games['TEAM'] = home_games['H_ID']
-        home_games['OPPONENT'] = home_games['A_ID']
-        home_games['WON'] = home_games['HOME_WIN']
         home_games['HOME'] = 1
 
         # basic stats against this team
@@ -65,13 +64,22 @@ def process_teams():
         home_games['STL_A'] = home_games['A_STL']
         home_games['BLK_A'] = home_games['A_BLK']
 
+        home_games['WON'] = home_games['HOME_WIN']
+        home_games['TEAM'] = home_games['H_ID']
+        home_games['OPPONENT'] = home_games['A_ID']
+
         # rename and remove
         home_games.rename(columns=home_rename, inplace=True)
         home_games.drop(columns=['HOME_WIN', 'ID', *away_cols], inplace=True)
 
-        # concat, sort and write to csv
+        # concat, sort by date, rearrange cols and write to csv
         team = pd.concat([away_games, home_games])
         team.sort_values(by='DATE', inplace=True)
+        team = team[
+            list(team.columns[:3]) + 
+            list(team.columns[-2:]) + 
+            list(team.columns[3:-2])
+        ]
         team.to_csv(os.path.join(
             TEAM_DIR, '{}.csv'.format(team_id)), index=False)
 
