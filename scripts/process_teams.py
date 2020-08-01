@@ -76,8 +76,8 @@ def process_teams():
         team = pd.concat([away_games, home_games])
         team.sort_values(by='DATE', inplace=True)
         team = team[
-            list(team.columns[:3]) + 
-            list(team.columns[-2:]) + 
+            list(team.columns[:3]) +
+            list(team.columns[-2:]) +
             list(team.columns[3:-2])
         ]
         team.to_csv(os.path.join(
