@@ -26,19 +26,19 @@ HEADERS = [
     'H_FTA', 'H_FT_PCT', 'H_OREB', 'H_DREB', 'H_REB', 'H_AST', 'H_STL',
     'H_BLK', 'H_TO', 'H_PF', 'H_PTS', 'H_PLUS_MIN',
 
-    'A_FTA_RATE', 'A_TM_TOV_PCT',
-    'H_FTA_RATE', 'H_TM_TOV_PCT',
+    'A_TM_TOV_PCT',
+    'H_TM_TOV_PCT',
 
-    'A_OFF_RATING', 'A_DEF_RATING', 'A_AST_TOV', 'A_EFG_PCT', 'A_TS_PCT', 'A_PACE', 'A_PIE',
-    'H_OFF_RATING', 'H_DEF_RATING', 'H_AST_TOV', 'H_EFG_PCT', 'H_TS_PCT', 'H_PACE', 'H_PIE',
+    'A_OFF_RATING', 'A_DEF_RATING', 'A_EFG_PCT', 'A_TS_PCT', 'A_PACE',
+    'H_OFF_RATING', 'H_DEF_RATING', 'H_EFG_PCT', 'H_TS_PCT', 'H_PACE',
 
     'A_PTS_OFF_TO', 'A_PTS_2ND_CHANCE', 'A_PTS_FB', 'A_PTS_PAINT',
     'H_PTS_OFF_TO', 'H_PTS_2ND_CHANCE', 'H_PTS_FB', 'H_PTS_PAINT',
 
-    'A_DIST', 'A_ORBC', 'A_DRBC', 'A_RBC', 'A_TCHS', 'A_SAST', 'A_PASS', 'A_CFGM', 'A_CFGA',
-    'A_UFGM', 'A_UFGA',
-    'H_DIST', 'H_ORBC', 'H_DRBC', 'H_RBC', 'H_TCHS', 'H_SAST', 'H_PASS', 'H_CFGM', 'H_CFGA',
-    'H_UFGM', 'H_UFGA',
+    'A_DIST', 'A_ORBC', 'A_DRBC', 'A_RBC', 'A_TCHS', 'A_PASS', 'A_CFGM',
+    'A_CFGA', 'A_UFGM', 'A_UFGA',
+    'H_DIST', 'H_ORBC', 'H_DRBC', 'H_RBC', 'H_TCHS', 'H_PASS', 'H_CFGM',
+    'H_CFGA', 'H_UFGM', 'H_UFGA',
 
     'HOME_WIN'
 ]
@@ -59,8 +59,8 @@ def process_game(game_path):
         data.append(summary['resultSets'][0]['rowSet'][0][8])  # season
 
         away_id = summary['resultSets'][0]['rowSet'][0][7]
-        data.append(away_id)
         home_id = summary['resultSets'][0]['rowSet'][0][6]
+        data.append(away_id)
         data.append(home_id)
 
     with open(os.path.join(game_path, 'traditional.json')) as f:
@@ -91,7 +91,7 @@ def process_game(game_path):
             team_idx = [1, 0]
 
         for team in team_idx:
-            data += factors['resultSets'][1]['rowSet'][team][7:9]
+            data.append(factors['resultSets'][1]['rowSet'][team][8])
 
     with open(os.path.join(game_path, 'advanced.json')) as f:
         adv = json.load(f)
@@ -106,11 +106,9 @@ def process_game(game_path):
             data += [
                 adv['resultSets'][1]['rowSet'][team][7],
                 adv['resultSets'][1]['rowSet'][team][9],
-                adv['resultSets'][1]['rowSet'][team][13],
                 adv['resultSets'][1]['rowSet'][team][20],
                 adv['resultSets'][1]['rowSet'][team][21],
                 adv['resultSets'][1]['rowSet'][team][25],
-                adv['resultSets'][1]['rowSet'][team][28],
             ]
 
     with open(os.path.join(game_path, 'misc.json')) as f:
@@ -136,7 +134,7 @@ def process_game(game_path):
 
         for team in team_idx:
             data += tracking['resultSets'][1]['rowSet'][team][6:10]
-            data += tracking['resultSets'][1]['rowSet'][team][10:12]
+            data += tracking['resultSets'][1]['rowSet'][team][10:11]
             data.append(tracking['resultSets'][1]['rowSet'][team][13])
             data += tracking['resultSets'][1]['rowSet'][team][15:17]
             data += tracking['resultSets'][1]['rowSet'][team][18:20]
@@ -147,7 +145,7 @@ def process_game(game_path):
 
 def process_season(season_id):
     src = os.path.join(RAW_DATA, 'games', season_id)
-    dest = os.path.join(PROC_DATA, 'games', season_id + '-full.csv')
+    dest = os.path.join(PROC_DATA, 'games', season_id[1:] + '-full.csv')
 
     with open(dest, 'w') as f:
         writer = csv.writer(f)
