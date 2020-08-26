@@ -47,7 +47,7 @@ def get_stats_cookie(exe_path):
         'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36')
     driver = webdriver.Chrome(executable_path=exe_path, options=options)
 
-    with driver as d:
+    with driver as d: # noqa
         driver.get('https://stats.nba.com/game/0021900969/')
 
         driver_cookies = driver.get_cookies()

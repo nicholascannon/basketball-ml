@@ -5,7 +5,6 @@ import sys
 import csv
 import json
 from tqdm import tqdm
-import pandas as pd
 
 DATA_DIR = os.path.join(pathlib.Path().absolute(), 'data')
 RAW_DATA = os.path.join(DATA_DIR, 'raw')
