@@ -85,7 +85,7 @@ def process_season(season, driver):
 
 def main():
     if len(sys.argv) < 1:
-        raise Error('Invalid args')
+        raise Exception('Invalid args')
 
     options = Options()
     options.add_argument('--headless')
